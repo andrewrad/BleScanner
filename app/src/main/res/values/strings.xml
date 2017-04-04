@@ -2,7 +2,6 @@
     <string name="app_name">BleScanner</string>
     <string name="action_settings">Settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="scanning_button_text">Scanning</string>
+    <string name="start_scan">Start Scan</string>
 </resources>

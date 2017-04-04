@@ -1,11 +1,13 @@
 package com.radicaldroids.blescanner;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class BleActivity extends AppCompatActivity {
 
@@ -15,6 +17,12 @@ public class BleActivity extends AppCompatActivity {
         setContentView(R.layout.activity_ble);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this,
+                    "Bluetooth LE is not supported in this device!", Toast.LENGTH_LONG).show();
+            finish();
+        }
 
         ScanFragment scanFragment = ScanFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
