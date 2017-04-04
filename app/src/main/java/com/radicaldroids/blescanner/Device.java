@@ -4,6 +4,9 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Plain java class as a parcelable for holding data in transport from the Service to the fragment
+ */
 class Device implements Parcelable {
     private BluetoothDevice name;
     private String rssi;

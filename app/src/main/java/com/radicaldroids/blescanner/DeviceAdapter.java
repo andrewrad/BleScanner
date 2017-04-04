@@ -30,7 +30,7 @@ class DeviceAdapter extends BaseAdapter {
     }
 
     void initiateList() {
-        mLeDevices = new ArrayList<Device>();
+        mLeDevices = new ArrayList<>();
     }
 
     @Override

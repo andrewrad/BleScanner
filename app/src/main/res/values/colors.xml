@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="scan_button_text">#FFFFFF</color>
+    <color name="scan_button_color">#FFFFFF</color>
     <color name="scan_button_bg">#00abfb</color>
-    <color name="scanning_button_text">#ececed</color>
+    <color name="scanning_button_color">#ececed</color>
     <color name="scanning_button_bg">#c5d772</color>
 </resources>
