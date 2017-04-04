@@ -24,7 +24,7 @@
         </activity>
 
         <service
-            android:name=".ScanService"
+            android:name=".BleService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

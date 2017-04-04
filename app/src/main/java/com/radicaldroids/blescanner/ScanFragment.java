@@ -2,9 +2,11 @@ package com.radicaldroids.blescanner;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,10 +30,19 @@ public class ScanFragment extends Fragment implements View.OnClickListener {
     @BindView(R.id.scan_data_list) ListView mList;
 
     private OnFragmentInteractionListener mListener;
-//    private BluetoothLeService mBluetoothLeService;
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     private DeviceAdapter mDeviceAdapter;
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Device device = (Device) bundle.get("device");
+            mDeviceAdapter.addDevice(device);
+            mDeviceAdapter.notifyDataSetChanged();
+            Log.e("broadcast", "received: " + bundle);
+        }
+    };
 
     // Connection to Service
 //    private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -67,27 +78,30 @@ public class ScanFragment extends Fragment implements View.OnClickListener {
 
         mHandler = new Handler();
 
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
-
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
-        }
+//        final BluetoothManager bluetoothManager =
+//                (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
+//        mBluetoothAdapter = bluetoothManager.getAdapter();
+//
+//        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+//            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//            startActivityForResult(enableBtIntent, 1);
+//        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //If Bluetooth is not currently enabled, fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
-        }
 
         mDeviceAdapter = new DeviceAdapter((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE));
         mList.setAdapter(mDeviceAdapter);
+
+        getActivity().registerReceiver(receiver, new IntentFilter(BleService.NOTIFICATION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(receiver);
     }
 
     @Override
@@ -129,11 +143,15 @@ public class ScanFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         mDeviceAdapter.initiateList();
+        mDeviceAdapter.notifyDataSetChanged();
+
+        final Intent bleIntent = new Intent(getActivity(), BleService.class);
+        getActivity().startService(bleIntent);
 
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                getActivity().stopService(bleIntent);
                 mScanButton.setBackgroundResource(R.drawable.start_scan_button);
                 mScanButton.setText(R.string.start_scan);
                 mScanButton.setTextColor(ContextCompat.getColor(getContext(), R.color.scan_button_text));
@@ -146,34 +164,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener {
         mScanButton.setTextColor(ContextCompat.getColor(getContext(), R.color.scanning_button_text));
         mScanButton.setClickable(false);
 
-//        Intent gattServiceIntent = new Intent(getActivity(), BluetoothLeService.class);
-//        getActivity().bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mBluetoothAdapter.startLeScan(mLeScanCallback);
-            }
-        }).start();
     }
-
-    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
-            Log.e("scan", "device " + device + ", rssi: " + rssi + ", scan record hex: " + scanRecord);
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Device bleDevice = new Device();
-                    bleDevice.setName(device);
-                    bleDevice.setRssi(String.valueOf(rssi));
-                    bleDevice.setRecord(scanRecord.toString());
-                    mDeviceAdapter.addDevice(bleDevice);
-                    mDeviceAdapter.notifyDataSetChanged();
-                }
-            });
-        }
-    };
 
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(Uri uri);

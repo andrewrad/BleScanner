@@ -24,6 +24,7 @@ public class BleActivity extends AppCompatActivity {
             finish();
         }
 
+        //instantiating and setting up scanFragment
         ScanFragment scanFragment = ScanFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.fragment_holder, scanFragment).commit();
